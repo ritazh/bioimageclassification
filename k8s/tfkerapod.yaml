@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: tensorflow-keras
+  name: tensorflow-keras
+spec:
+  volumes:
+  - name: libraries
+    hostPath:
+      path: /usr/lib/x86_64-linux-gnu
+  - name: azurefile
+    azureFile:
+        secretName: azure-secret
+        shareName: data
+        readOnly: false      
+  containers:
+  - name: tensorflow-keras
+    command: ["/bin/sh", "-c"]
+    args: ["export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu_custom:$LD_LIBRARY_PATH; while true; do sleep 30; done;"]
+    image: afritzler/tensorflow-keras-gpu
+    resources:
+      limits:
+        alpha.kubernetes.io/nvidia-gpu: 1
+    volumeMounts:
+    - mountPath: /usr/lib/x86_64-linux-gnu_custom
+      name: libraries
+    - mountPath: "/data"
+      name: azurefile    
+    imagePullPolicy: Always
+  restartPolicy: Never
